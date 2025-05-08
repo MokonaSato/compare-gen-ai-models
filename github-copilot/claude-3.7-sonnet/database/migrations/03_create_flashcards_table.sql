@@ -1,0 +1,9 @@
+CREATE TABLE flashcards (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    vocabulary_list_id INT NOT NULL,
+    content TEXT NOT NULL,
+    tags VARCHAR(255),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (vocabulary_list_id) REFERENCES vocabulary_lists(id) ON DELETE CASCADE
+);

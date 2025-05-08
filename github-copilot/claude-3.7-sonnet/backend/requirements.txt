@@ -1,0 +1,11 @@
+# Flask==2.2.2
+Flask==2.3.3
+Flask-Cors==3.0.10
+Flask-SQLAlchemy==2.5.1
+mysqlclient==2.1.0
+python-dotenv==0.19.2
+pytest==7.1.2
+pytest-flask==1.2.0
+
+# 追記
+Werkzeug==2.3.7

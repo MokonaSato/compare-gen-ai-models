@@ -1,0 +1,8 @@
+fastapi
+uvicorn[standard]
+sqlalchemy
+databases[mysql]
+PyMySQL # mysqlclient の代わりに PyMySQL を使用
+python-jose[cryptography] # JWTトークン用
+passlib[bcrypt] # パスワードハッシュ化用
+python-multipart # ファイルアップロード用 (将来的に必要になる可能性)

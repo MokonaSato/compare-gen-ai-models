@@ -1,0 +1,6 @@
+FastAPI
+SQLAlchemy
+pydantic
+mysqlclient
+uvicorn
+dotenv

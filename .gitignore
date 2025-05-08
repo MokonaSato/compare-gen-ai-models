@@ -1,0 +1,38 @@
+# Node.js関連
+node_modules/
+dist/
+.env
+.vscode/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Python関連
+__pycache__/
+*.py[cod]
+*.sqlite3
+*.log
+instance/
+.venv/
+env/
+*.env
+
+# DB関連
+data/
+
+# Docker関連
+docker-compose.override.yml
+*.pid
+
+# IDE/エディタ関連
+.idea/
+*.iml
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# OS関連
+.DS_Store
+Thumbs.db

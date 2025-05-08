@@ -1,0 +1,54 @@
+version: '3.8'
+
+services:
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "3000:80" # ホストの3000番ポートをコンテナの80番ポートにマッピング
+    depends_on:
+      - backend
+    volumes:
+      - ./frontend:/app # 開発用にソースコードをマウント (ビルド済みの静的ファイルを使う場合は不要な場合も)
+      - /app/node_modules # node_modules はホストと共有しない
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000" # ホストの8000番ポートをコンテナの8000番ポートにマッピング
+    volumes:
+      - ./backend:/app # 開発用にソースコードをマウント
+    environment:
+      # データベース接続情報 (MySQLサービスに合わせて設定)
+      - DB_HOST=db
+      - DB_USER=user # MySQLのユーザー名 (init.sqlと合わせるか、環境変数で設定)
+      - DB_PASSWORD=password # MySQLのパスワード
+      - DB_NAME=wordbook_db # MySQLのデータベース名
+    depends_on:
+      db:
+        condition: service_healthy # dbサービスがhealthy状態になってからbackendを起動
+
+  db:
+    image: mysql:8.0
+    platform: linux/amd64 # M1/M2 Macでの互換性のため
+    ports:
+      - "3306:3306" # ホストの3306番ポートをコンテナの3306番ポートにマッピング
+    environment:
+      MYSQL_DATABASE: wordbook_db
+      MYSQL_USER: user
+      MYSQL_PASSWORD: password
+      MYSQL_ROOT_PASSWORD: rootpassword
+    volumes:
+      - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql # 初期化SQLを実行
+      - mysql_data:/var/lib/mysql # データ永続化
+    healthcheck:
+      test: ["CMD", "mysqladmin" ,"ping", "-h", "localhost", "-u", "user", "-ppassword"] # healthcheckのユーザーとパスワードを修正
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  mysql_data:
