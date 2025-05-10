@@ -12,20 +12,25 @@ import type {
     GetWordCardsParams
 } from '../types';
 
-// API基本URL（local開発時はプロキシを使用）
-const API_BASE_URL = '/';
+// APIエンドポイントのベースURLを設定
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '';
+const TOKEN_ENDPOINT = '/token';
 
+// デバッグ用のログ出力
+console.log('API_BASE_URL:', API_BASE_URL);
+
+// APIクライアントの作成
 const apiClient = axios.create({
-  baseURL: API_BASE_URL,
+  baseURL: 'http://localhost:8000', // バックエンドのポートを8000に修正
   headers: {
-    'Content-Type': 'application/json',
-  },
+    'Content-Type': 'application/json'
+  }
 });
 
 // トークンをローカルストレージから取得する関数
 const getToken = () => localStorage.getItem('accessToken');
 
-// リクエストインターセプターで認証トークンをヘッダーに追加
+// axiosリクエストインターセプターを設定
 apiClient.interceptors.request.use(
   (config) => {
     const token = getToken();
@@ -44,7 +49,7 @@ apiClient.interceptors.request.use(
 // 認証
 export const login = async (credentials: URLSearchParams): Promise<AuthToken> => {
   const response = await apiClient.post<AuthToken>(
-    '/token',
+    TOKEN_ENDPOINT,
     credentials,
     {
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
@@ -58,23 +63,36 @@ export const login = async (credentials: URLSearchParams): Promise<AuthToken> =>
 
 export const logout = () => {
   localStorage.removeItem('accessToken');
-  // 必要に応じてサーバーサイドのログアウト処理も呼び出す
 };
-
 
 // --- Wordbook ---
 export const getWordbooks = async (): Promise<Wordbook[]> => {
-  const response = await apiClient.get<Wordbook[]>('/wordbooks');
-  return response.data;
+  try {
+    console.log('Requesting wordbooks from:', `/wordbooks`);
+    const response = await apiClient.get<Wordbook[]>(`/wordbooks`);
+    console.log('Response received:', response.status);
+    return response.data;
+  } catch (error: any) {
+    console.error('Error in getWordbooks:', error);
+    if (error.request) {
+      console.error('Error request details:', error.request);
+    }
+    if (error.response) {
+      console.error('Error response details:', error.response);
+      console.error('Status:', error.response.status);
+      console.error('Data:', error.response.data);
+    }
+    throw error;
+  }
 };
 
-export const getWordbook = async (id: number): Promise<Wordbook> => { // 詳細なので単数形
+export const getWordbook = async (id: number): Promise<Wordbook> => {
   const response = await apiClient.get<Wordbook>(`/wordbooks/${id}`);
   return response.data;
 };
 
 export const createWordbook = async (data: WordbookCreatePayload): Promise<Wordbook> => {
-  const response = await apiClient.post<Wordbook>('/wordbooks', data);
+  const response = await apiClient.post<Wordbook>(`/wordbooks`, data);
   return response.data;
 };
 
@@ -83,54 +101,50 @@ export const updateWordbook = async (id: number, data: WordbookUpdatePayload): P
   return response.data;
 };
 
-export const deleteWordbook = async (id: number): Promise<Wordbook> => { // 削除時も削除されたオブジェクトを返す想定
+export const deleteWordbook = async (id: number): Promise<Wordbook> => {
   const response = await apiClient.delete<Wordbook>(`/wordbooks/${id}`);
   return response.data;
 };
 
 // --- WordCard ---
 export const getWordCards = async (wordbookId: number, params?: GetWordCardsParams): Promise<WordCard[]> => {
-    const response = await apiClient.get<WordCard[]>(`/wordbooks/${wordbookId}/cards`, { params });
-    return response.data;
+  const response = await apiClient.get<WordCard[]>(`/wordbooks/${wordbookId}/cards`, { params });
+  return response.data;
 };
 
 export const getWordCard = async (wordbookId: number, cardId: number): Promise<WordCard> => {
-    const response = await apiClient.get<WordCard>(`/wordbooks/${wordbookId}/cards/${cardId}`);
-    return response.data;
+  const response = await apiClient.get<WordCard>(`/wordbooks/${wordbookId}/cards/${cardId}`);
+  return response.data;
 };
 
 export const createWordCard = async (wordbookId: number, data: WordCardCreatePayload): Promise<WordCard> => {
-    // wordbookIdはパスに含まれるので、dataからは不要かもしれないが、バックエンドのWordCardCreateスキーマに合わせる
-    const payload = { ...data, wordbook_id: wordbookId };
-    const response = await apiClient.post<WordCard>(`/wordbooks/${wordbookId}/cards`, payload);
-    return response.data;
+  const payload = { ...data, wordbook_id: wordbookId };
+  const response = await apiClient.post<WordCard>(`/wordbooks/${wordbookId}/cards`, payload);
+  return response.data;
 };
 
 export const updateWordCard = async (wordbookId: number, cardId: number, data: WordCardUpdatePayload): Promise<WordCard> => {
-    const response = await apiClient.put<WordCard>(`/wordbooks/${wordbookId}/cards/${cardId}`, data);
-    return response.data;
+  const response = await apiClient.put<WordCard>(`/wordbooks/${wordbookId}/cards/${cardId}`, data);
+  return response.data;
 };
 
 export const deleteWordCard = async (wordbookId: number, cardId: number): Promise<WordCard> => {
-    const response = await apiClient.delete<WordCard>(`/wordbooks/${wordbookId}/cards/${cardId}`);
-    return response.data;
+  const response = await apiClient.delete<WordCard>(`/wordbooks/${wordbookId}/cards/${cardId}`);
+  return response.data;
 };
-
 
 // --- Tag ---
 export const getTags = async (): Promise<Tag[]> => {
-  const response = await apiClient.get<Tag[]>('/tags');
+  const response = await apiClient.get<Tag[]>(`/tags`);
   return response.data;
 };
 
 export const createTag = async (data: TagCreatePayload): Promise<Tag> => {
-  const response = await apiClient.post<Tag>('/tags', data);
+  const response = await apiClient.post<Tag>(`/tags`, data);
   return response.data;
 };
 
 export const deleteTag = async (id: number): Promise<Tag> => {
-    const response = await apiClient.delete<Tag>(`/tags/${id}`);
-    return response.data;
+  const response = await apiClient.delete<Tag>(`/tags/${id}`);
+  return response.data;
 };
-
-// 他のAPI関数もここに追加

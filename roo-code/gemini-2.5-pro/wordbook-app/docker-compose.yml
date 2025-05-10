@@ -5,6 +5,8 @@ services:
       dockerfile: Dockerfile
     ports:
       - "3000:80" # ホストの3000番ポートをコンテナの80番ポートにマッピング
+    environment:
+      - VITE_API_BASE_URL=/api # APIのベースURLを環境変数として設定
     depends_on:
       - backend
     volumes:
@@ -42,11 +44,13 @@ services:
     volumes:
       - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql # 初期化SQLを実行
       - mysql_data:/var/lib/mysql # データ永続化
+      - ./db/my.cnf:/etc/my.cnf
     healthcheck:
       test: ["CMD", "mysqladmin" ,"ping", "-h", "localhost", "-u", "user", "-ppassword"] # healthcheckのユーザーとパスワードを修正
       interval: 10s
       timeout: 5s
       retries: 5
+    command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
 
 volumes:
   mysql_data:
